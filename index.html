@@ -1,63 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#12324a">
 <title>Mənim Büdcəm</title>
 <style>
-body{font-family:-apple-system,Arial;background:#f1f5f9;color:#17212b;margin:0;padding:16px}
-header{background:#12324a;color:white;padding:22px;border-radius:18px}
-h1{margin:0} .card{background:white;padding:16px;border-radius:16px;margin:14px 0;box-shadow:0 2px 10px #0001}
-input,select,button{box-sizing:border-box;width:100%;padding:13px;margin:5px 0;border:1px solid #d6dee5;border-radius:10px;font-size:16px}
-button{background:#12324a;color:white;font-weight:bold;border:0}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#eef3f7;padding:12px;border-radius:12px;overflow-wrap:anywhere}.green{color:#16804a}.red{color:#c03939}
-.item{padding:12px 0;border-bottom:1px solid #ddd;overflow-wrap:anywhere}.small{font-size:12px;color:#667784}
+:root{--navy:#12324a;--blue:#236b8e;--bg:#f3f6f8;--card:#fff;--text:#17212b;--muted:#667784;--green:#16794b;--red:#bd3d3d;--line:#e3e9ed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:linear-gradient(135deg,#12324a,#236b8e);color:white;padding:24px 18px 28px;border-radius:0 0 24px 24px}
+h1{font-size:25px;margin:0 0 5px}header p{margin:0;color:#d9e8ef;font-size:14px}
+main{max-width:700px;margin:auto;padding:15px 14px 95px}.monthrow{display:flex;gap:8px;align-items:center;margin:0 0 14px}
+input,select,button{font:inherit}input,select{width:100%;padding:13px 12px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--text);min-width:0}
+.monthrow input{flex:1}.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #16324f0b}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{padding:14px;border-radius:14px;background:#f5f8fa}.metric span{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}.metric strong{font-size:21px;letter-spacing:-.4px;overflow-wrap:anywhere}.income{color:var(--green)}.expense{color:var(--red)}.balance{background:#e8f3ed}.balance strong{color:var(--green)}
+h2{font-size:17px;margin:0 0 14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.field label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px 2px}
+button{border:0;border-radius:12px;padding:13px 14px;font-weight:650;cursor:pointer}.primary{background:var(--navy);color:white;width:100%;margin-top:12px}.secondary{background:#eaf1f5;color:var(--navy)}.dangerbtn{background:#fff0f0;color:var(--red);padding:8px 10px;font-size:12px}
+.listitem{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.listitem:last-child{border-bottom:0}.dot{width:10px;height:10px;border-radius:50%;flex:none}.itemmain{flex:1;min-width:0}.itemmain b{display:block;font-size:14px;overflow-wrap:anywhere}.itemmain small{color:var(--muted);font-size:12px}.amount{font-weight:700;white-space:nowrap}.empty{color:var(--muted);font-size:14px;text-align:center;padding:20px 4px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar button{flex:1;min-width:120px}.hint{font-size:12px;color:var(--muted);line-height:1.5}
+nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:9px max(14px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:8px}
+nav button{flex:1;max-width:220px;background:transparent;color:var(--muted);font-size:12px;padding:9px 4px}nav button.active{background:#eaf1f5;color:var(--navy)}
+#report{display:none}.sectiontitle{display:flex;justify-content:space-between;align-items:center;gap:10px}
+@media(min-width:560px){main{padding-top:22px}.metrics{grid-template-columns:repeat(4,1fr)}.metric strong{font-size:19px}}
 </style>
 </head>
 <body>
-<header><h1>💰 Mənim Büdcəm</h1><p>Gəlirini və xərclərini idarə et</p></header>
-<div class="card">
-<label>Hesabat ayı</label><input id="month" type="month">
-<div class="stats">
-<div class="stat">Gəlir<strong id="income" class="green">0 ₼</strong></div>
-<div class="stat">Xərc<strong id="expense" class="red">0 ₼</strong></div>
-<div class="stat">Qalan pul<strong id="balance">0 ₼</strong></div>
-<div class="stat">Yığım<strong id="saving">0 ₼</strong></div>
+<header><h1>💰 Mənim Büdcəm</h1><p>Gəlirini, xərclərini və yığımını asanlıqla izlə.</p></header>
+<main>
+<div class="monthrow"><strong>Ay:</strong><input type="month" id="month"></div>
+<section id="home">
+<div class="card"><div class="metrics">
+<div class="metric"><span>Ümumi gəlir</span><strong id="income" class="income">0 ₼</strong></div>
+<div class="metric"><span>Ümumi xərc</span><strong id="expense" class="expense">0 ₼</strong></div>
+<div class="metric balance"><span>Qalan pul</span><strong id="balance">0 ₼</strong></div>
+<div class="metric"><span>Yığıma ayırdığın</span><strong id="saving">0 ₼</strong></div>
 </div></div>
-<div class="card"><h2>➕ Yeni qeyd</h2>
-<label>Tarix</label><input id="date" type="date">
-<label>Növ</label><select id="type"><option>Gəlir</option><option>Xərc</option><option>Yığım</option></select>
-<label>Kateqoriya</label><select id="cat"></select>
-<label>Məbləğ (₼)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="Məbləğ">
-<label>Qeyd</label><input id="note" placeholder="Məsələn: maaş, market">
-<button id="add">Yadda saxla</button></div>
-<div class="card"><h2>📋 Əməliyyatlar</h2><div id="list"></div>
-<button id="backup">Ehtiyat nüsxəsini çıxart</button></div>
-<p class="small">Məlumatlar bu brauzerin yaddaşında saxlanır. Vaxtaşırı ehtiyat nüsxəsi çıxart.</p>
+<div class="card"><h2>➕ Yeni əməliyyat</h2>
+<form id="entryForm"><div class="formgrid">
+<div class="field"><label for="date">Tarix</label><input id="date" type="date" required></div>
+<div class="field"><label for="type">Əməliyyat növü</label><select id="type"><option>Gəlir</option><option>Xərc</option><option>Yığım</option></select></div>
+<div class="field"><label for="category">Kateqoriya</label><select id="category"></select></div>
+<div class="field"><label for="amount">Məbləğ (₼)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></div>
+<div class="field full"><label for="note">Qeyd (istəyə bağlı)</label><input id="note" maxlength="100" placeholder="Məsələn: aylıq maaş, market..."></div>
+</div><button class="primary" type="submit">+ Yadda saxla</button></form>
+<p class="hint">Məlumatlar bu cihazın brauzerində saxlanılır. Brauzer məlumatlarını silsən, qeydlər də silinə bilər.</p>
+</div>
+<div class="card"><div class="sectiontitle"><h2>📋 Bu ayın əməliyyatları</h2><span id="count" class="hint">0 qeyd</span></div><div id="transactions"></div></div>
+</section>
+<section id="report">
+<div class="card"><h2>📊 Aylıq hesabat</h2><div id="reportBody"></div></div>
+<div class="card"><h2>💾 Məlumatların ehtiyat nüsxəsi</h2><p class="hint">Məlumatlarını fayla çıxarıb sonradan geri yükləyə bilərsən.</p>
+<div class="toolbar"><button class="secondary" id="export">Fayla çıxart</button><button class="secondary" id="importBtn">Fayldan yüklə</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
+<p style="margin-top:14px"><button class="dangerbtn" id="clearMonth">Bu ayın qeydlərini sil</button></p></div>
+</section>
+</main>
+<nav><button id="homeTab" class="active">🏠 Ana səhifə</button><button id="reportTab">📊 Hesabat və ehtiyat nüsxə</button></nav>
 <script>
 const $=id=>document.getElementById(id);
-const categories={Gəlir:["Maaş","Biznes","Əlavə gəlir","Digər"],Xərc:["Kirayə","Yemək","Nəqliyyat","Kommunal","Telefon","Sağlamlıq","Geyim","Əyləncə","Borc","Digər"],Yığım:["Yığım","Depozit","Digər"]};
-let data=[];try{data=JSON.parse(localStorage.getItem("menimBudcem")||"[]")}catch(e){data=[]}
-const now=new Date(),today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
-$("date").value=today;$("month").value=today.slice(0,7);
-const money=n=>Number(n).toLocaleString("az-AZ",{minimumFractionDigits:2,maximumFractionDigits:2})+" ₼";
-function save(){localStorage.setItem("menimBudcem",JSON.stringify(data))}
-function updateCats(){let old=$("cat").value;$("cat").innerHTML=categories[$("type").value].map(x=>"<option>"+x+"</option>").join("");if(categories[$("type").value].includes(old))$("cat").value=old}
+const cats={Gəlir:["Maaş","Biznes","Əlavə gəlir","Hədiyyə","Digər"],Xərc:["Kirayə","Yemək","Nəqliyyat","Kommunal","Telefon və internet","Sağlamlıq","Geyim","Əyləncə","Borc","Biznes xərci","Digər"],Yığım:["Yığım","Depozit","İnvestisiya","Digər"]};
+let entries=[];
+try{entries=JSON.parse(localStorage.getItem("menimBudcemEntries")||"[]");if(!Array.isArray(entries))entries=[]}catch(e){entries=[]}
+const today=new Date();const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+$("month").value=iso(today).slice(0,7);$("date").value=iso(today);
+const money=n=>new Intl.NumberFormat("az-AZ",{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)+" ₼";
+function save(){localStorage.setItem("menimBudcemEntries",JSON.stringify(entries))}
+function updateCats(){const old=$("category").value;const type=$("type").value;$("category").innerHTML=cats[type].map(c=>`<option>${c}</option>`).join("");if(cats[type].includes(old))$("category").value=old}
+function monthEntries(){return entries.filter(e=>e.date.slice(0,7)===$("month").value).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id)}
 function render(){
-let m=$("month").value,rows=data.filter(x=>x.date.slice(0,7)===m);
-let sum=t=>rows.filter(x=>x.type===t).reduce((s,x)=>s+x.amount,0);
-let inc=sum("Gəlir"),exp=sum("Xərc"),sav=sum("Yığım");
-$("income").textContent=money(inc);$("expense").textContent=money(exp);$("balance").textContent=money(inc-exp-sav);$("saving").textContent=money(sav);
-$("list").innerHTML=rows.length?rows.slice().reverse().map(x=>'<div class="item"><b>'+esc(x.cat)+'</b> — '+esc(x.note||x.type)+'<br><span class="small">'+x.date+' · '+x.type+'</span><br><b>'+ (x.type==="Xərc"?"−":x.type==="Gəlir"?"+":"")+money(x.amount)+'</b> <button data-id="'+x.id+'" style="width:auto;padding:7px 12px;background:#b83232">Sil</button></div>').join(""):"<p class='small'>Bu ay qeyd yoxdur.</p>";
+ const es=monthEntries(),sum=t=>es.filter(e=>e.type===t).reduce((s,e)=>s+e.amount,0),inc=sum("Gəlir"),exp=sum("Xərc"),sav=sum("Yığım");
+ $("income").textContent=money(inc);$("expense").textContent=money(exp);$("balance").textContent=money(inc-exp-sav);$("saving").textContent=money(sav);$("count").textContent=es.length+" qeyd";
+ $("transactions").innerHTML=es.length?es.map(e=>`<div class="listitem"><span class="dot" style="background:${e.type==="Gəlir"?"#198754":e.type==="Xərc"?"#c43e3e":"#d49a12"}"></span><div class="itemmain"><b>${escapeHtml(e.category)}${e.note?" · "+escapeHtml(e.note):""}</b><small>${e.date.split("-").reverse().join(".")} · ${e.type}</small></div><span class="amount" style="color:${e.type==="Gəlir"?"#16794b":e.type==="Xərc"?"#bd3d3d":"#986b00"}">${e.type==="Xərc"?"−":e.type==="Gəlir"?"+":""}${money(e.amount)}</span><button class="dangerbtn" data-delete="${e.id}" aria-label="Sil">Sil</button></div>`).join(""):'<div class="empty">Bu ay hələ qeyd yoxdur. Yuxarıdan ilk gəlirini və ya xərcini əlavə et.</div>';
+ const by={};es.filter(e=>e.type==="Xərc").forEach(e=>by[e.category]=(by[e.category]||0)+e.amount);
+ const catsHtml=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="listitem"><div class="itemmain"><b>${escapeHtml(c)}</b></div><span class="amount">${money(v)}</span></div>`).join("");
+ $("reportBody").innerHTML=`<div class="metrics"><div class="metric"><span>Gəlir</span><strong class="income">${money(inc)}</strong></div><div class="metric"><span>Xərc</span><strong class="expense">${money(exp)}</strong></div><div class="metric balance"><span>Qalıq</span><strong>${money(inc-exp-sav)}</strong></div><div class="metric"><span>Yığım</span><strong>${money(sav)}</strong></div></div><h2 style="margin-top:20px">Xərclərin bölgüsü</h2>${catsHtml||'<p class="empty">Bu ay xərc qeyd edilməyib.</p>'}<p class="hint">Yığım ayrıca göstərilir və qalan pul hesablananda çıxılır.</p>`;
 }
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-$("type").onchange=updateCats;updateCats();
-$("add").onclick=()=>{let amount=Number($("amount").value);if(!$("date").value||!amount||amount<=0){alert("Tarix və düzgün məbləğ daxil et.");return}
-data.push({id:Date.now(),date:$("date").value,type:$("type").value,cat:$("cat").value,note:$("note").value.trim(),amount});
-save();$("amount").value="";$("note").value="";render();alert("Qeyd yadda saxlanıldı!")};
-$("month").onchange=render;
-$("list").onclick=e=>{let b=e.target.closest("[data-id]");if(b&&confirm("Bu qeydi silək?")){data=data.filter(x=>String(x.id)!==b.dataset.id);save();render()}};
-$("backup").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="budce-ehtiyat.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("type").addEventListener("change",updateCats);updateCats();
+$("entryForm").addEventListener("submit",e=>{e.preventDefault();const amount=Number($("amount").value);if(!Number.isFinite(amount)||amount<=0){alert("Məbləği düzgün daxil et.");return}
+ entries.push({id:Date.now()+Math.floor(Math.random()*1000),date:$("date").value,type:$("type").value,category:$("category").value,amount,note:$("note").value.trim()});save();$("amount").value="";$("note").value="";render();});
+$("transactions").addEventListener("click",e=>{const b=e.target.closest("[data-delete]");if(!b)return;if(confirm("Bu qeydi silmək istəyirsən?")){entries=entries.filter(x=>String(x.id)!==b.dataset.delete);save();render()}});
+$("month").addEventListener("change",render);
+function tab(which){const home=which==="home";$("home").style.display=home?"block":"none";$("report").style.display=home?"none":"block";$("homeTab").classList.toggle("active",home);$("reportTab").classList.toggle("active",!home);window.scrollTo(0,0)}
+$("homeTab").onclick=()=>tab("home");$("reportTab").onclick=()=>tab("report");
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="menim-budcem-ehtiyat.json";a.click();URL.revokeObjectURL(url)};
+$("importBtn").onclick=()=>$("importFile").click();
+$("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data)||data.some(x=>!x.date||!x.type||!Number.isFinite(Number(x.amount))))throw Error();if(confirm("Mövcud qeydlərin üstünə yüklənsin? OK = əvəz et, Cancel = əlavə et.")){entries=data}else{entries=entries.concat(data.map(x=>({...x,id:Date.now()+Math.floor(Math.random()*1e6)})))}save();render();alert("Məlumatlar yükləndi.")}catch(err){alert("Fayl oxunmadı. Düzgün ehtiyat nüsxə JSON faylı seç.")}e.target.value=""};
+$("clearMonth").onclick=()=>{if(confirm("Seçilmiş ayın bütün qeydlərini silmək istəyirsən? Bu əməliyyat geri qaytarılmır.")){const m=$("month").value;entries=entries.filter(e=>e.date.slice(0,7)!==m);save();render()}};
 render();
 </script>
 </body></html>
