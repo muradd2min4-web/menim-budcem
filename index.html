@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mənim Büdcəm</title>
+<style>
+body{font-family:-apple-system,Arial;background:#f1f5f9;color:#17212b;margin:0;padding:16px}
+header{background:#12324a;color:white;padding:22px;border-radius:18px}
+h1{margin:0} .card{background:white;padding:16px;border-radius:16px;margin:14px 0;box-shadow:0 2px 10px #0001}
+input,select,button{box-sizing:border-box;width:100%;padding:13px;margin:5px 0;border:1px solid #d6dee5;border-radius:10px;font-size:16px}
+button{background:#12324a;color:white;font-weight:bold;border:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#eef3f7;padding:12px;border-radius:12px;overflow-wrap:anywhere}.green{color:#16804a}.red{color:#c03939}
+.item{padding:12px 0;border-bottom:1px solid #ddd;overflow-wrap:anywhere}.small{font-size:12px;color:#667784}
+</style>
+</head>
+<body>
+<header><h1>💰 Mənim Büdcəm</h1><p>Gəlirini və xərclərini idarə et</p></header>
+<div class="card">
+<label>Hesabat ayı</label><input id="month" type="month">
+<div class="stats">
+<div class="stat">Gəlir<strong id="income" class="green">0 ₼</strong></div>
+<div class="stat">Xərc<strong id="expense" class="red">0 ₼</strong></div>
+<div class="stat">Qalan pul<strong id="balance">0 ₼</strong></div>
+<div class="stat">Yığım<strong id="saving">0 ₼</strong></div>
+</div></div>
+<div class="card"><h2>➕ Yeni qeyd</h2>
+<label>Tarix</label><input id="date" type="date">
+<label>Növ</label><select id="type"><option>Gəlir</option><option>Xərc</option><option>Yığım</option></select>
+<label>Kateqoriya</label><select id="cat"></select>
+<label>Məbləğ (₼)</label><input id="amount" type="number" min="0.01" step="0.01" placeholder="Məbləğ">
+<label>Qeyd</label><input id="note" placeholder="Məsələn: maaş, market">
+<button id="add">Yadda saxla</button></div>
+<div class="card"><h2>📋 Əməliyyatlar</h2><div id="list"></div>
+<button id="backup">Ehtiyat nüsxəsini çıxart</button></div>
+<p class="small">Məlumatlar bu brauzerin yaddaşında saxlanır. Vaxtaşırı ehtiyat nüsxəsi çıxart.</p>
+<script>
+const $=id=>document.getElementById(id);
+const categories={Gəlir:["Maaş","Biznes","Əlavə gəlir","Digər"],Xərc:["Kirayə","Yemək","Nəqliyyat","Kommunal","Telefon","Sağlamlıq","Geyim","Əyləncə","Borc","Digər"],Yığım:["Yığım","Depozit","Digər"]};
+let data=[];try{data=JSON.parse(localStorage.getItem("menimBudcem")||"[]")}catch(e){data=[]}
+const now=new Date(),today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+$("date").value=today;$("month").value=today.slice(0,7);
+const money=n=>Number(n).toLocaleString("az-AZ",{minimumFractionDigits:2,maximumFractionDigits:2})+" ₼";
+function save(){localStorage.setItem("menimBudcem",JSON.stringify(data))}
+function updateCats(){let old=$("cat").value;$("cat").innerHTML=categories[$("type").value].map(x=>"<option>"+x+"</option>").join("");if(categories[$("type").value].includes(old))$("cat").value=old}
+function render(){
+let m=$("month").value,rows=data.filter(x=>x.date.slice(0,7)===m);
+let sum=t=>rows.filter(x=>x.type===t).reduce((s,x)=>s+x.amount,0);
+let inc=sum("Gəlir"),exp=sum("Xərc"),sav=sum("Yığım");
+$("income").textContent=money(inc);$("expense").textContent=money(exp);$("balance").textContent=money(inc-exp-sav);$("saving").textContent=money(sav);
+$("list").innerHTML=rows.length?rows.slice().reverse().map(x=>'<div class="item"><b>'+esc(x.cat)+'</b> — '+esc(x.note||x.type)+'<br><span class="small">'+x.date+' · '+x.type+'</span><br><b>'+ (x.type==="Xərc"?"−":x.type==="Gəlir"?"+":"")+money(x.amount)+'</b> <button data-id="'+x.id+'" style="width:auto;padding:7px 12px;background:#b83232">Sil</button></div>').join(""):"<p class='small'>Bu ay qeyd yoxdur.</p>";
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+$("type").onchange=updateCats;updateCats();
+$("add").onclick=()=>{let amount=Number($("amount").value);if(!$("date").value||!amount||amount<=0){alert("Tarix və düzgün məbləğ daxil et.");return}
+data.push({id:Date.now(),date:$("date").value,type:$("type").value,cat:$("cat").value,note:$("note").value.trim(),amount});
+save();$("amount").value="";$("note").value="";render();alert("Qeyd yadda saxlanıldı!")};
+$("month").onchange=render;
+$("list").onclick=e=>{let b=e.target.closest("[data-id]");if(b&&confirm("Bu qeydi silək?")){data=data.filter(x=>String(x.id)!==b.dataset.id);save();render()}};
+$("backup").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="budce-ehtiyat.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+render();
+</script>
+</body></html>
